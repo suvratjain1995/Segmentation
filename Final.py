@@ -12,8 +12,8 @@ FLAGS = flags.FLAGS
 flags.DEFINE_bool('TRANSFER',True, "Bottleneck features training file (.p)")
 flags.DEFINE_integer('epochs', 50, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 5, "The batch size.")
-flags.DEFINE_float('learning_rate',0.0003,"Learning Rate")
-flags.DEFINE_float('kp',0.7,"Keep Probability")
+flags.DEFINE_float('learning_rate',0.0001,"Learning Rate")
+flags.DEFINE_float('kp',0.5,"Keep Probability")
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
 print('TensorFlow Version: {}'.format(tf.__version__))
@@ -90,14 +90,14 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                     kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3),
                                     name="new_7_1x1")
         
-        vgg_layer3_out1 = tf.multiply(vgg_layer3_out,0.0001,name="layer3_1x1")
+        #vgg_layer3_out1 = tf.multiply(vgg_layer3_out,0.0001,name="layer3_1x1")
 
-        vgg_layer4_out1 = tf.multiply(vgg_layer4_out,0.01,name="layer4_1x1")
-        layer4_1x1=tf.layers.conv2d(vgg_layer4_out1,num_classes,1,strides=(1,1),
+        #vgg_layer4_out1 = tf.multiply(vgg_layer4_out,0.01,name="layer4_1x1")
+        layer4_1x1=tf.layers.conv2d(vgg_layer4_out,num_classes,1,strides=(1,1),
                                     kernel_initializer= tf.random_normal_initializer(stddev=0.01),
                                     kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3),
                                     name="new_4_1x1")
-        layer3_1x1=tf.layers.conv2d(vgg_layer3_out1,num_classes,1,strides=(1,1),
+        layer3_1x1=tf.layers.conv2d(vgg_layer3_out,num_classes,1,strides=(1,1),
                                     kernel_initializer= tf.random_normal_initializer(stddev=0.01),
                                     kernel_regularizer= tf.contrib.layers.l2_regularizer(1e-3),
                                     name="new_3_1x1")
@@ -139,9 +139,9 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     """
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits = nn_last_layer,labels = correct_label)
     mean_cross_entropy = tf.reduce_mean(cross_entropy)
-    #reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES,scope="decoder")
-    #reg_constant = 0.0001  # Choose an appropriate one.
-    #mean_cross_entropy = mean_cross_entropy + reg_constant * sum(reg_losses)
+    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    reg_constant = 0.0001  # Choose an appropriate one.
+    mean_cross_entropy = mean_cross_entropy + reg_constant * sum(reg_losses)
     opt = None
     with tf.variable_scope("decoder"):
         opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
