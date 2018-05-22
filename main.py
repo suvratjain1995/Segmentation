@@ -128,6 +128,9 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     """
     cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits = nn_last_layer,labels = correct_label)
     mean_cross_entropy = tf.reduce_mean(cross_entropy)
+    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES,scope="decoder")
+    reg_constant = 0.1  # Choose an appropriate one.
+    mean_cross_entropy = mean_cross_entropy + reg_constant * sum(reg_losses)
     opt = None
     with tf.variable_scope("decoder"):
         opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -138,10 +141,10 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
         trainable_variables += [var for var in tf.global_variables() if 'beta' in var.name]
         print("Trainable variables:", len(trainable_variables))
         training_op = opt.minimize(mean_cross_entropy,var_list=trainable_variables,name="training_op")
-        return nn_last_layer,training_op,cross_entropy
+        return nn_last_layer,training_op,mean_cross_entropy
     else:
         training_op = opt.minimize(mean_cross_entropy,name="training_op")
-        return nn_last_layer,training_op,cross_entropy
+        return nn_last_layer,training_op,mean_cross_entropy
         
     
 #tests.test_optimize(optimize)
@@ -162,12 +165,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-
-    # TODO: Implement function
-
-    
-    # temp_loss=None
-    # loss_flag=0
     for epoch in range(epochs):
         print(epoch)
         for images,labels in get_batches_fn(batch_size):
@@ -176,7 +173,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             #     temp_loss = loss
             #     loss_flag = 1
                 
-            print(sess.run(tf.reduce_mean(loss)))
+            print("Loss:- ",loss)
 # tests.test_train_nn(train_nn)
 
 
