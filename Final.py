@@ -137,11 +137,13 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits = nn_last_layer,labels = correct_label)
+    logits = tf.reshape(nn_last_layer,(-1,num_classes))
+    correct_label = tf.reshape(correct_label,(-1,num_classes))
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits = logits,labels = correct_label)
     mean_cross_entropy = tf.reduce_mean(cross_entropy)
-    reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-    reg_constant = 0.0001  # Choose an appropriate one.
-    mean_cross_entropy = mean_cross_entropy + reg_constant * sum(reg_losses)
+    # reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+    # reg_constant = 0.0001  # Choose an appropriate one.
+    # mean_cross_entropy = mean_cross_entropy + reg_constant * sum(reg_losses)
     opt = None
     with tf.variable_scope("decoder"):
         opt = tf.train.AdamOptimizer(learning_rate=learning_rate)
@@ -155,7 +157,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
         return nn_last_layer,training_op,mean_cross_entropy
     else:
         training_op = opt.minimize(mean_cross_entropy,name="training_op")
-        return nn_last_layer,training_op,mean_cross_entropy
+        return logits,training_op,mean_cross_entropy
         
     
 #tests.test_optimize(optimize)
