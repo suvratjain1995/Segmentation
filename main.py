@@ -10,10 +10,10 @@ FLAGS = flags.FLAGS
 
 # command line flags
 flags.DEFINE_bool('TRANSFER',True, "Bottleneck features training file (.p)")
-flags.DEFINE_integer('epochs', 10, "The number of epochs.")
+flags.DEFINE_integer('epochs', 50, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 5, "The batch size.")
-flags.DEFINE_float('learning_rate',0.01,"Learning Rate")
-flags.DEFINE_float('kp',0.05,"Keep Probability")
+flags.DEFINE_float('learning_rate',0.0001,"Learning Rate")
+flags.DEFINE_float('kp',0.75,"Keep Probability")
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
 print('TensorFlow Version: {}'.format(tf.__version__))
